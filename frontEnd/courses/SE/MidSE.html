@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../java1/Exams.css" />
+    <link rel="stylesheet" href="../../navbar.css" />
+    <!--FONTS-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200;300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <title>MidtermSE</title>
+  </head>
+  <body>
+    <div class="Contanier">
+      <div class="navbar">
+        <nav>
+            <input type="checkbox" id="check">
+            <label for="check" class="checkbtn">
+              <svg class="ham hamRotate ham1" viewBox="0 0 100 100" width="80" onclick="this.classList.toggle('active')">
+                <path
+                      class="line top"
+                      d="m 30,33 h 40 c 0,0 9.044436,-0.654587 9.044436,-8.508902 0,-7.854315 -8.024349,-11.958003 -14.89975,-10.85914 -6.875401,1.098863 -13.637059,4.171617 -13.637059,16.368042 v 40" />
+                <path
+                      class="line middle"
+                      d="m 30,50 h 40" />
+                <path
+                      class="line bottom"
+                      d="m 30,67 h 40 c 12.796276,0 15.357889,-11.717785 15.357889,-26.851538 0,-15.133752 -4.786586,-27.274118 -16.667516,-27.274118 -11.88093,0 -18.499247,6.994427 -18.435284,17.125656 l 0.252538,40" />
+              </svg>
+            </label>
+            <a class="heading" href="#">Adaptive Learning</a>
+        </nav>
+        <div class="main">
+          <h1>Question 1</h1>
+          <div class="quiz">
+            <h2 id="question">____ is one of the user testing, where is it test the software at the developer’s site:</h2>
+            <div id="answer-buttons" class="question1">
+              <button class="btn">A. Alpha testing</button> <!--correct-->
+              <button class="btn">B. User testing</button>
+              <button class="btn">C. Beta testing</button>
+              <button class="btn">D. a and c</button> 
+            </div>
+          </div>
+        </div>
+        <div class="main">
+          <h1>Question 2</h1>
+          <div class="quiz">
+            <h2 id="question">The difference between static and dynamic models is that static model</h2>
+            <div id="answer-buttons" class="question2">
+              <button class="btn">A. Describe the static structure of the system in terms of object classes and relation</button> <!--correct-->
+              <button class="btn">B. Describe the dynamic interactions between objects</button>
+              <button class="btn">C. Both a and b</button>
+              <button class="btn">D. None of the above</button>
+            </div>
+        </div>        
+    </div>
+    <div class="main">
+        <h1>Question 3</h1>
+        <div class="quiz">
+          <h2 id="question">Identifying ______ is often a difficult part of object oriented design.</h2>
+          <div id="answer-buttons" class="question3">
+            <button class="btn">A. Object class</button> <!--correct-->
+            <button class="btn">B. Object methods</button>
+            <button class="btn">C. Object attributes</button>
+            <button class="btn">D. All of the above</button> 
+          </div>
+          <button id="next-btn">Submit</button>
+      </div> 
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      let answers = [];
+
+      function clickButton(elem) {
+        elem.style.backgroundColor = '#0F2C59';
+        elem.style.color = 'white';
+        elem.style.transition = '.5s ease';
+      }
+      
+      function clearButtons(selector) {
+        $(selector).children(".btn").each((i, elem) => {
+          elem.style.backgroundColor = "";
+          elem.style.color = "";
+        })
+      }
+
+      const questionClasses = [
+        {
+          selector: "question1",
+          answer: "A"
+        },
+        {
+          selector: "question2",
+          answer: "A"
+        },
+        {
+          selector: "question3",
+          answer: "A"
+        }
+      ];
+
+      questionClasses.forEach(({ selector: classSelector }) => {
+        $(`.${classSelector} .btn`).click((event) => {
+          const { target } = event;
+          clearButtons(`.${classSelector}`)
+          clickButton(target);
+          const questionNumber = parseInt(classSelector.charAt(classSelector.length - 1)) - 1;
+          console.log(questionNumber)
+          answers[questionNumber] = {
+            question: classSelector,
+            answer: target
+          }
+        })
+      })
+
+      function makeAlert(data) {
+          data.confirmButtonColor = "#0F2C59";
+          return Swal.fire(data);
+      }
+
+      function wait(ms) {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve();
+          }, ms);
+        })
+      }
+
+      $("#next-btn").click(() => {
+        if(answers.length < questionClasses.length) {
+          makeAlert({
+              title: "لم تجاوب على كل الأسئلة",
+              icon: "error"
+          })
+        } else {
+          let correct = 0;
+          for(let i = 0; i < answers.length; i++) {
+            const { question, answer } = answers[i];
+            const { selector, answer: correctAnswer } = questionClasses[i];
+            if(question == selector && answer.innerHTML.startsWith(correctAnswer)) {
+              correct++;
+            }
+          }
+
+          if(correct == questionClasses.length) {
+            makeAlert({
+              title: "لقد اجتزت الإختبار، سيتم تحويلك للصفحة الرئيسية",
+              icon: "success"
+            }).then(() => {
+              window.location.replace("/")
+            })
+          } else {
+            makeAlert({
+              title: `لقد حصلت على ${correct}/${questionClasses.length} في الإختبار\nحاول مجددًّا`,
+              icon: "error"
+            }).then(() => {
+              for(const { selector } of questionClasses) {
+                clearButtons(`.${selector}`)
+              }
+              answers = [];
+            })
+          }
+        }
+      })
+
+
+    </script>
+</body>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="Exams.css" />
+    <link rel="stylesheet" href="../../navbar.css" />
+    <!--FONTS-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200;300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <title>Quiz</title>
+  </head>
+  <body>
+    <div class="Contanier">
+      <div class="navbar">
+        <nav>
+            <input type="checkbox" id="check">
+            <label for="check" class="checkbtn">
+              <svg class="ham hamRotate ham1" viewBox="0 0 100 100" width="80" onclick="this.classList.toggle('active')">
+                <path
+                      class="line top"
+                      d="m 30,33 h 40 c 0,0 9.044436,-0.654587 9.044436,-8.508902 0,-7.854315 -8.024349,-11.958003 -14.89975,-10.85914 -6.875401,1.098863 -13.637059,4.171617 -13.637059,16.368042 v 40" />
+                <path
+                      class="line middle"
+                      d="m 30,50 h 40" />
+                <path
+                      class="line bottom"
+                      d="m 30,67 h 40 c 12.796276,0 15.357889,-11.717785 15.357889,-26.851538 0,-15.133752 -4.786586,-27.274118 -16.667516,-27.274118 -11.88093,0 -18.499247,6.994427 -18.435284,17.125656 l 0.252538,40" />
+              </svg>
+            </label>
+            <a class="heading" href="#">Adaptive Learning</a>
+        </nav>
+        <div class="main">
+          <h1>Question 1</h1>
+          <div class="quiz">
+            <h2 id="question">Which of the following is a legal identifier?</h2>
+            <div id="answer-buttons" class="question1">
+              <button class="btn">A. var 1</button>
+              <button class="btn">B. 1var</button>
+              <button class="btn">C. var_1</button> <!--correct answer is c -->
+              <button class="btn">D. var-1</button>
+            </div>
+          </div>
+        </div>
+        <div class="main">
+          <h1>Question 2</h1>
+          <div class="quiz">
+            <h2 id="question">Assume int x = 0, y = 3;
+              What will be the value of x and y after the following statement?
+              x = y – y++;</h2>
+            <div id="answer-buttons" class="question2">
+              <button class="btn">A. x = 0, y = 4</button> <!--correct answer is a -->
+              <button class="btn">B. x = 1, y = 4</button>
+              <button class="btn">C. x = 0, y = 3</button>
+              <button class="btn">D. x = 1, y = 3</button>
+            </div>
+            <button id="next-btn">Submit</button>
+          </div>        
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      let answers = [];
+
+      function clickButton(elem) {
+        elem.style.backgroundColor = '#0F2C59';
+        elem.style.color = 'white';
+        elem.style.transition = '.5s ease';
+      }
+      
+      function clearButtons(selector) {
+        $(selector).children(".btn").each((i, elem) => {
+          elem.style.backgroundColor = "";
+          elem.style.color = "";
+        })
+      }
+
+      const questionClasses = [
+        {
+          selector: "question1",
+          answer: "C"
+        },
+        {
+          selector: "question2",
+          answer: "A"
+        }
+      ];
+
+      questionClasses.forEach(({selector: classSelector}) => {
+        $(`.${classSelector} .btn`).click((event) => {
+          const { target } = event;
+          clearButtons(`.${classSelector}`)
+          clickButton(target);
+          const questionNumber = parseInt(classSelector.charAt(classSelector.length - 1)) - 1;
+          answers[questionNumber] = {
+            question: classSelector,
+            answer: target
+          }
+        })
+      })
+
+      function makeAlert(data) {
+          data.confirmButtonColor = "#0F2C59";
+          return Swal.fire(data);
+      }
+
+      function wait(ms) {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve();
+          }, ms);
+        })
+      }
+
+      $("#next-btn").click(() => {
+        if(answers.length < questionClasses.length) {
+          makeAlert({
+              title: "لم تجاوب على كل الأسئلة",
+              icon: "error"
+          })
+        } else {
+          let correct = 0;
+          for(let i = 0; i < answers.length; i++) {
+            const { question, answer } = answers[i];
+            const { selector, answer: correctAnswer } = questionClasses[i];
+            if(question == selector && answer.innerHTML.startsWith(correctAnswer)) {
+              correct++;
+            }
+          }
+
+          if(correct == questionClasses.length) {
+            makeAlert({
+              title: "لقد اجتزت الإختبار، سيتم تحويلك للصفحة الرئيسية",
+              icon: "success"
+            }).then(() => {
+              window.location.replace("/")
+            })
+          } else {
+            makeAlert({
+              title: `لقد حصلت على ${correct}/${questionClasses.length} في الإختبار\nحاول مجددًّا`,
+              icon: "error"
+            }).then(() => {
+              for(const { selector } of questionClasses) {
+                clearButtons(`.${selector}`)
+              }
+              answers = [];
+            })
+          }
+        }
+      })
+
+
+    </script>
+</body>
