@@ -15,6 +15,7 @@ function comparePassword(password, hashedPassword) {
     });
 }
 
+
 function generateRandomUUID() {
     let result = "";
     let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -24,12 +25,32 @@ function generateRandomUUID() {
     return result;
 }
 
+
 async function generateAPIKey() {
     let api_key = generateRandomUUID();
     while(await knex("users").select("*").where({ api_key }).first()) {
         api_key = generateRandomUUID();
     }
     return api_key;
+}
+
+// Added function getUserByEmail - NEW
+async function getUserByEmail(email) {
+    return knex("users").select("*").where({ email }).first();
+}
+
+// Added function isValidPassword - NEW
+async function isValidPassword(inputPassword, storedPassword) {
+    try {
+        return await comparePassword(inputPassword, storedPassword);
+    } catch {
+        return false;
+    }
+}
+
+// Added function updateAPIKey - NEW
+async function updateAPIKey(email, newApiKey) {
+    await knex("users").update({ api_key: newApiKey }).where({ email });
 }
 
 module.exports = {
@@ -51,23 +72,21 @@ module.exports = {
             return api_key;
         }
     },
+
+    // Refactored checkUser function - EDITED
     async checkUser(email, password) {
-        const data = await knex("users").select("*").where({ email }).first();
-        if(data) {
-            const hashedPassword = data.password;
-            try {
-                const api_key = await generateAPIKey();
-                const result = await comparePassword(password, hashedPassword);
-                if(result) await knex("users").update({ api_key }).where({ email });
-                
-                return api_key;
-            } catch {
-                return false;
-            }
-        } else {
-            return false;
-        }
+        const user = await getUserByEmail(email);
+        if (!user) return false;
+
+        const isValid = await isValidPassword(password, user.password);
+        if (!isValid) return false;
+
+        const newApiKey = await generateAPIKey();
+        await updateAPIKey(email, newApiKey);
+
+        return newApiKey;
     },
+
     async checkByAPIKey(api_key) {
         const data = await knex("users").select("*").where({ api_key }).first();
         if(data) {
@@ -76,4 +95,4 @@ module.exports = {
             return false;
         }
     }
-}
+};
